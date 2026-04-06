@@ -2,11 +2,100 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from e_heed.shared.settings import AppConfig
+
+##### AVAILABLE MODELS #####
+
+
+def test_available_models_discovers_onnx(tmp_path: Path) -> None:
+    ww_dir = tmp_path / "ww"
+    ww_dir.mkdir()
+    (ww_dir / "alexa.onnx").touch()
+    (ww_dir / "eager.onnx").touch()
+    (ww_dir / "config.yaml").touch()
+
+    with patch("e_heed.cli.commands.sentinel._MODELS_DIR", ww_dir):
+        from e_heed.cli.commands.sentinel import _available_models
+
+        models = _available_models()
+
+    assert models == ["alexa", "eager"]
+
+
+def test_available_models_empty_when_no_dir(tmp_path: Path) -> None:
+    with patch("e_heed.cli.commands.sentinel._MODELS_DIR", tmp_path / "nonexistent"):
+        from e_heed.cli.commands.sentinel import _available_models
+
+        assert _available_models() == []
+
+
+##### LIST MODELS #####
+
+
+def test_sentinel_list_models(tmp_path: Path) -> None:
+    ww_dir = tmp_path / "ww"
+    ww_dir.mkdir()
+    (ww_dir / "alexa.onnx").touch()
+    (ww_dir / "maia.onnx").touch()
+
+    with patch("e_heed.cli.commands.sentinel._MODELS_DIR", ww_dir):
+        from e_heed.cli.commands.sentinel import sentinel
+
+        sentinel(list_models=True)
+
+
+##### MODEL OVERRIDE #####
+
+
+@patch("e_heed.cli.commands.sentinel.asyncio.run")
+@patch("e_heed.cli.commands.sentinel._available_models", return_value=["alexa", "eager", "maia"])
+@patch("e_heed.cli.commands.sentinel.AppConfig.load")
+async def test_sentinel_model_override(
+    mock_load: MagicMock, mock_models: MagicMock, mock_asyncio_run: MagicMock
+) -> None:
+    config = AppConfig()
+    mock_load.return_value = config
+
+    from e_heed.cli.commands.sentinel import sentinel
+
+    sentinel(model="eager")
+
+    assert config.sentinel.wakeword.model == "eager"
+    mock_asyncio_run.assert_called_once()
+
+
+@patch("e_heed.cli.commands.sentinel._available_models", return_value=["alexa", "eager"])
+@patch("e_heed.cli.commands.sentinel.AppConfig.load")
+async def test_sentinel_invalid_model_exits(mock_load: MagicMock, mock_models: MagicMock) -> None:
+    mock_load.return_value = AppConfig()
+
+    from e_heed.cli.commands.sentinel import sentinel
+
+    with pytest.raises(SystemExit) as exc_info:
+        sentinel(model="nonexistent")
+    assert exc_info.value.code == 1
+
+
+##### THRESHOLD OVERRIDE #####
+
+
+@patch("e_heed.cli.commands.sentinel.asyncio.run")
+@patch("e_heed.cli.commands.sentinel.AppConfig.load")
+async def test_sentinel_threshold_override(mock_load: MagicMock, mock_asyncio_run: MagicMock) -> None:
+    config = AppConfig()
+    mock_load.return_value = config
+
+    from e_heed.cli.commands.sentinel import sentinel
+
+    sentinel(threshold=0.3)
+
+    assert config.sentinel.wakeword.threshold == 0.3
+
 
 ##### SENTINEL CLI ENTRY #####
 

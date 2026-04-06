@@ -214,3 +214,17 @@ models/*/**
 
 data/
 data/*/**
+
+##### TRAINER #####
+trainer/legacy/
+trainer/rirsuv sync --group dev --group train/
+trainer/noise/
+trainer/music/
+trainer/features/
+trainer/clips/
+trainer/augmented/
+trainer/output/
+trainer/*.yaml
+trainer/*.wav
+trainer/datasets/**
+trainer/models/**
