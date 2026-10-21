@@ -1,8 +1,8 @@
-<p align="center">
-  <img src="assets/logo.svg" alt="e-heed" width="220" />
-</p>
+<h1 align="center">e-clawhisper</h1>
 
-<h1 align="center">e-heed</h1>
+<p align="center">
+  <img src="assets/logo.svg" alt="e-clawhisper" height="110" />
+</p>
 
 <p align="center">
   <strong>Always-on voice daemon — wake-word activated desktop bridge for Agent backends, powered by <a href="https://github.com/damvolkov/e-voice">e-voice</a>.</strong>
