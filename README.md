@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.jpg" alt="e-heed" width="200" />
+  <img src="assets/logo.svg" alt="e-heed" width="220" />
 </p>
 
 <h1 align="center">e-heed</h1>
